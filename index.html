@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,89 +8,414 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css"
     />
-    <title>Vercel HTML Starter</title>
+    <title>学生信息管理系统</title>
     <meta
       name="description"
-      content="High-performance HTML based website template."
+      content="学生信息管理系统：登录/注册、管理员学生信息增删改查。"
     />
+    <style>
+      .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+      .tabs button { cursor: pointer; }
+      .hidden { display: none; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+      @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid #ddd; padding: .5rem; }
+      .muted { color: #666; font-size: .9em; }
+      .danger { color: #b00020; }
+      .success { color: #0a7a18; }
+      .toolbar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+      .right { margin-left: auto; }
+      .card { border: 1px solid #e5e5e5; padding: 1rem; border-radius: 8px; }
+    </style>
   </head>
   <body>
-    <h1>Vercel HTML Starter</h1>
-    <p>
-      This template is a simple, but powerful single
-      <code>index.html</code> file deployed to
-      <a href="https://vercel.com">Vercel</a>. When your site is deployed, all
-      static assets (like HTML, JavaScript, CSS, images, and more) are deployed
-      globally to every
-      <a href="https://vercel.com/docs/concepts/edge-network/overview"
-        >Vercel Edge Network</a
-      >
-      region.
-    </p>
-    <h2>Simple, privacy-friendly analytics</h2>
-    <p>
-      Want to understand your visitor traffic? Vercel Analytics gives you
-      first-party, privacy-friendly traffic analytics for your HTML site. This
-      template is already configured using the following script:
-    </p>
-    <pre><code>&lt;script defer src="/_vercel/insights/script.js"&gt;&lt;/script&gt;</code></pre>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/analytics">Vercel Analytics</a>.
-    </p>
-    <h2>Integrated with git</h2>
-    <p>
-      Deploying updates to your site is as simple as
-      <code>git push</code> thanks to Vercel's advanced
-      <a href="https://vercel.com/docs/concepts/git">Git Integration</a>.
-      Support for GitHub, GitLab, Bitbucket is zero-configuration, and with the
-      flexible Vercel CLI and API, you can integrate with any tool possible.
-    </p>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/git">Git Integration</a>.
-    </p>
-    <h2>Fast <code>gzip</code> compression</h2>
-    <p>
-      To help ensure the smallest possible file sizes for your static assets,
-      the Vercel Edge Network compresses files by default using
-      <code>gzip</code>. You can also optionally use
-      <code>brotli</code> compressesion if you prefer.
-    </p>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/edge-network/compression"
-        >compression</a
-      >.
-    </p>
-    <h2>Advanced routing configuration</h2>
-    <p>
-      Vercel gives you a variety of ways to configure the routing of your
-      website. For example, adding redirects, rewrites, or headers to your page.
-      While you can use <code>vercel.json</code> to define these through JSON,
-      you can also express your routing configuration as code using
-      <a href="https://vercel.com/docs/concepts/functions/edge-middleware"
-        >Vercel Edge Middleware</a
-      >.
-    </p>
-    <p>
-      Middleware runs before the
-      <a href="https://vercel.com/docs/concepts/edge-network/caching"
-        >Vercel Edge Network Cache</a
-      >, so you can configure routing exactly as your application needs. For
-      example, this template uses <code>middleware.js</code> defined in the root
-      of the repository to add additional security headers to the site:
-    </p>
-    <pre><code>referrer-policy: origin-when-cross-origin
-strict-transport-security: max-age=31536000; includeSubDomains; preload
-x-content-type-options: nosniff
-x-dns-prefetch-control: on
-x-frame-options: DENY</code></pre>
-    <p>
-      Learn more about
-      <a href="https://vercel.com/docs/concepts/functions/edge-middleware"
-        >Vercel Edge Middleware</a
-      >.
-    </p>
+    <h1>学生信息管理系统</h1>
+    <p class="muted">Neon 数据库 · Vercel Serverless Functions · UTF-8 中文支持</p>
+
+    <div class="tabs">
+      <button id="tab-login">登录</button>
+      <button id="tab-register">注册（学生）</button>
+      <button id="tab-admin" class="hidden">管理员面板</button>
+      <button id="tab-student" class="hidden">我的信息</button>
+      <span class="right toolbar">
+        <span id="whoami" class="muted">未登录</span>
+        <button id="btn-logout" class="hidden">退出</button>
+      </span>
+    </div>
+
+    <section id="panel-login" class="card">
+      <h2>登录</h2>
+      <div class="toolbar">
+        <label><input type="radio" name="role" value="student" checked /> 学生</label>
+        <label><input type="radio" name="role" value="admin" /> 管理员</label>
+      </div>
+      <form id="form-login">
+        <div id="login-student-fields">
+          <label>学号
+            <input type="text" id="login-student-no" required placeholder="请输入学号" />
+          </label>
+          <label>密码
+            <input type="password" id="login-student-pw" required placeholder="请输入密码" />
+          </label>
+        </div>
+        <div id="login-admin-fields" class="hidden">
+          <label>用户名
+            <input type="text" id="login-admin-username" placeholder="admin" />
+          </label>
+          <label>密码
+            <input type="password" id="login-admin-pw" placeholder="admin" />
+          </label>
+        </div>
+        <button type="submit">登录</button>
+        <span id="login-msg" class="muted"></span>
+      </form>
+      <p class="muted">提示：默认管理员账号为 <code>admin / admin</code>，首次部署后需点击“初始化数据库”。</p>
+      <button id="btn-init">初始化数据库</button>
+      <span id="init-msg" class="muted"></span>
+    </section>
+
+    <section id="panel-register" class="card hidden">
+      <h2>学生注册</h2>
+      <form id="form-register">
+        <div class="row">
+          <label>学号
+            <input type="text" id="reg-student-no" required />
+          </label>
+          <label>姓名
+            <input type="text" id="reg-name" required />
+          </label>
+          <label>性别
+            <input type="text" id="reg-gender" />
+          </label>
+          <label>年龄
+            <input type="number" id="reg-age" min="0" />
+          </label>
+          <label>班级
+            <input type="text" id="reg-class" />
+          </label>
+          <label>专业
+            <input type="text" id="reg-major" />
+          </label>
+          <label>电话
+            <input type="text" id="reg-phone" />
+          </label>
+          <label>邮箱
+            <input type="email" id="reg-email" />
+          </label>
+          <label>密码
+            <input type="password" id="reg-pw" required />
+          </label>
+        </div>
+        <button type="submit">注册</button>
+        <span id="reg-msg" class="muted"></span>
+      </form>
+    </section>
+
+    <section id="panel-admin" class="card hidden">
+      <h2>管理员面板</h2>
+      <div class="toolbar">
+        <button id="btn-refresh">刷新学生列表</button>
+        <span id="admin-msg" class="muted"></span>
+      </div>
+      <details open>
+        <summary>新增学生</summary>
+        <form id="form-create">
+          <div class="row">
+            <label>学号<input type="text" id="c-student-no" required /></label>
+            <label>姓名<input type="text" id="c-name" required /></label>
+            <label>性别<input type="text" id="c-gender" /></label>
+            <label>年龄<input type="number" id="c-age" min="0" /></label>
+            <label>班级<input type="text" id="c-class" /></label>
+            <label>专业<input type="text" id="c-major" /></label>
+            <label>电话<input type="text" id="c-phone" /></label>
+            <label>邮箱<input type="email" id="c-email" /></label>
+            <label>初始密码<input type="password" id="c-password" /></label>
+          </div>
+          <button type="submit">添加</button>
+          <span id="create-msg" class="muted"></span>
+        </form>
+      </details>
+      <h3>学生列表</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>学号</th>
+            <th>姓名</th>
+            <th>班级</th>
+            <th>专业</th>
+            <th>电话</th>
+            <th>邮箱</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-students"></tbody>
+      </table>
+    </section>
+
+    <section id="panel-student" class="card hidden">
+      <h2>我的信息</h2>
+      <div id="me-box"></div>
+    </section>
+
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const show = (el) => el.classList.remove('hidden');
+      const hide = (el) => el.classList.add('hidden');
+      const jsonFetch = async (url, opts={}) => {
+        const res = await fetch(url, { 
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          ...opts,
+          body: opts.body ? JSON.stringify(opts.body) : undefined
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || '请求失败');
+        }
+        return data.data;
+      };
+
+      const tabs = {
+        login: $('#panel-login'),
+        register: $('#panel-register'),
+        admin: $('#panel-admin'),
+        student: $('#panel-student'),
+      };
+      function switchTab(name) {
+        Object.values(tabs).forEach(hide);
+        show(tabs[name]);
+      }
+
+      $('#tab-login').onclick = () => switchTab('login');
+      $('#tab-register').onclick = () => switchTab('register');
+      $('#tab-admin').onclick = () => switchTab('admin');
+      $('#tab-student').onclick = () => switchTab('student');
+
+      // role switch
+      const roleRadios = Array.from(document.getElementsByName('role'));
+      roleRadios.forEach(r => r.addEventListener('change', () => {
+        if (roleRadios.find(x => x.checked).value === 'student') {
+          show($('#login-student-fields'));
+          hide($('#login-admin-fields'));
+        } else {
+          hide($('#login-student-fields'));
+          show($('#login-admin-fields'));
+        }
+      }));
+
+      // init db
+      $('#btn-init').onclick = async () => {
+        $('#init-msg').textContent = '初始化中...';
+        try {
+          const d = await jsonFetch('/api/init', { method: 'POST' });
+          $('#init-msg').textContent = '完成：' + (d?.message || '初始化完成');
+        } catch (e) {
+          $('#init-msg').textContent = '失败：' + e.message;
+        }
+      };
+
+      // login
+      $('#form-login').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $('#login-msg').textContent = '';
+        const role = roleRadios.find(x => x.checked).value;
+        try {
+          if (role === 'student') {
+            const student_no = $('#login-student-no').value.trim();
+            const password = $('#login-student-pw').value;
+            const data = await jsonFetch('/api/auth/student/login', { method: 'POST', body: { student_no, password } });
+            $('#whoami').textContent = `学生：${data.name}（${data.student_no}）`;
+            show($('#tab-student'));
+            hide($('#tab-admin'));
+            show($('#btn-logout'));
+            switchTab('student');
+            await loadMe();
+          } else {
+            const username = $('#login-admin-username').value.trim() || 'admin';
+            const password = $('#login-admin-pw').value || 'admin';
+            const data = await jsonFetch('/api/auth/admin/login', { method: 'POST', body: { username, password } });
+            $('#whoami').textContent = `管理员：${data.username}`;
+            show($('#tab-admin'));
+            hide($('#tab-student'));
+            show($('#btn-logout'));
+            switchTab('admin');
+            await refreshStudents();
+          }
+        } catch (err) {
+          $('#login-msg').textContent = err.message;
+        }
+      });
+
+      // logout (clear cookie by setting expired; simple client-side hint)
+      $('#btn-logout').onclick = () => {
+        document.cookie = 'token=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+        $('#whoami').textContent = '未登录';
+        hide($('#tab-admin'));
+        hide($('#tab-student'));
+        hide($('#btn-logout'));
+        switchTab('login');
+      };
+
+      // register
+      $('#form-register').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $('#reg-msg').textContent = '提交中...';
+        const body = {
+          student_no: $('#reg-student-no').value.trim(),
+          name: $('#reg-name').value.trim(),
+          gender: $('#reg-gender').value.trim(),
+          age: $('#reg-age').value ? Number($('#reg-age').value) : null,
+          class: $('#reg-class').value.trim(),
+          major: $('#reg-major').value.trim(),
+          phone: $('#reg-phone').value.trim(),
+          email: $('#reg-email').value.trim(),
+          password: $('#reg-pw').value
+        };
+        try {
+          await jsonFetch('/api/auth/student/register', { method: 'POST', body });
+          $('#reg-msg').textContent = '注册成功，请到登录页登录';
+        } catch (err) {
+          $('#reg-msg').textContent = err.message;
+        }
+      });
+
+      // admin: create
+      $('#form-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $('#create-msg').textContent = '提交中...';
+        const body = {
+          student_no: $('#c-student-no').value.trim(),
+          name: $('#c-name').value.trim(),
+          gender: $('#c-gender').value.trim(),
+          age: $('#c-age').value ? Number($('#c-age').value) : null,
+          class: $('#c-class').value.trim(),
+          major: $('#c-major').value.trim(),
+          phone: $('#c-phone').value.trim(),
+          email: $('#c-email').value.trim(),
+          password: $('#c-password').value
+        };
+        try {
+          await jsonFetch('/api/students', { method: 'POST', body });
+          $('#create-msg').textContent = '添加成功';
+          e.target.reset();
+          await refreshStudents();
+        } catch (err) {
+          $('#create-msg').textContent = err.message;
+        }
+      });
+
+      // admin: list
+      $('#btn-refresh').onclick = () => refreshStudents();
+      async function refreshStudents() {
+        $('#admin-msg').textContent = '加载中...';
+        try {
+          const d = await jsonFetch('/api/students', { method: 'GET' });
+          const list = d.students || [];
+          const tbody = $('#tbody-students');
+          tbody.innerHTML = '';
+          for (const s of list) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${s.id}</td>
+              <td>${s.student_no}</td>
+              <td><input value="${s.name || ''}" data-field="name" style="min-width:8ch" /></td>
+              <td><input value="${s.class || ''}" data-field="class" style="min-width:8ch" /></td>
+              <td><input value="${s.major || ''}" data-field="major" style="min-width:8ch" /></td>
+              <td><input value="${s.phone || ''}" data-field="phone" style="min-width:10ch" /></td>
+              <td><input value="${s.email || ''}" data-field="email" style="min-width:16ch" /></td>
+              <td>
+                <button data-act="save">保存</button>
+                <button data-act="del" class="danger">删除</button>
+              </td>
+            `;
+            tr.querySelector('[data-act="save"]').onclick = async () => {
+              const body = {};
+              tr.querySelectorAll('input').forEach(inp => body[inp.dataset.field] = inp.value.trim());
+              try {
+                await jsonFetch('/api/students/' + s.id, { method: 'PUT', body });
+                await refreshStudents();
+              } catch (e) {
+                alert('保存失败：' + e.message);
+              }
+            };
+            tr.querySelector('[data-act="del"]').onclick = async () => {
+              if (!confirm('确认删除该学生？')) return;
+              try {
+                await jsonFetch('/api/students/' + s.id, { method: 'DELETE' });
+                await refreshStudents();
+              } catch (e) {
+                alert('删除失败：' + e.message);
+              }
+            };
+            tbody.appendChild(tr);
+          }
+          $('#admin-msg').textContent = `共 ${list.length} 条记录`;
+        } catch (e) {
+          $('#admin-msg').textContent = e.message;
+        }
+      }
+
+      // student: me
+      async function loadMe() {
+        const box = $('#me-box');
+        box.textContent = '加载中...';
+        try {
+          const d = await jsonFetch('/api/students/me', { method: 'GET' });
+          const s = d.student;
+          box.innerHTML = `
+            <p><b>学号：</b>${s.student_no}</p>
+            <p><b>姓名：</b>${s.name || ''}</p>
+            <p><b>性别：</b>${s.gender || ''}</p>
+            <p><b>年龄：</b>${s.age ?? ''}</p>
+            <p><b>班级：</b>${s.class || ''}</p>
+            <p><b>专业：</b>${s.major || ''}</p>
+            <p><b>电话：</b>${s.phone || ''}</p>
+            <p><b>邮箱：</b>${s.email || ''}</p>
+            <details>
+              <summary>修改我的信息</summary>
+              <form id="form-me">
+                <div class="row">
+                  <label>姓名<input id="m-name" value="${s.name || ''}" /></label>
+                  <label>性别<input id="m-gender" value="${s.gender || ''}" /></label>
+                  <label>年龄<input id="m-age" type="number" value="${s.age ?? ''}" /></label>
+                  <label>班级<input id="m-class" value="${s.class || ''}" /></label>
+                  <label>专业<input id="m-major" value="${s.major || ''}" /></label>
+                  <label>电话<input id="m-phone" value="${s.phone || ''}" /></label>
+                  <label>邮箱<input id="m-email" value="${s.email || ''}" /></label>
+                  <label>新密码<input id="m-password" type="password" placeholder="留空则不修改" /></label>
+                </div>
+                <button type="submit">保存修改</button>
+                <span id="me-msg" class="muted"></span>
+              </form>
+            </details>
+          `;
+          $('#form-me').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            $('#me-msg').textContent = '提交中...';
+            const body = {
+              name: $('#m-name').value.trim(),
+              gender: $('#m-gender').value.trim(),
+              age: $('#m-age').value ? Number($('#m-age').value) : null,
+              class: $('#m-class').value.trim(),
+              major: $('#m-major').value.trim(),
+              phone: $('#m-phone').value.trim(),
+              email: $('#m-email').value.trim(),
+              password: $('#m-password').value
+            };
+            try {
+              await jsonFetch('/api/students/' + s.id, { method: 'PUT', body });
+              $('#me-msg').textContent = '已保存';
+              await loadMe();
+            } catch (err) {
+              $('#me-msg').textContent = err.message;
+            }
+          });
+        } catch (e) {
+          box.textContent = e.message;
+        }
+      }
+    </script>
   </body>
 </html>
