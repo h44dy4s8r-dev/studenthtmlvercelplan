@@ -73,25 +73,27 @@ export function verifyJwt(token) {
 
 export function setAuthCookie(res, token, cookieName = defaultCookieName) {
   const maxAge = 60 * 60 * 8; // 8 hours
+  const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
   const cookie = [
     `${cookieName}=${token}`,
     `Path=/`,
     `HttpOnly`,
     `SameSite=Lax`,
     `Max-Age=${maxAge}`,
-    `Secure`,
+    ...(isProd ? [`Secure`] : []),
   ].join('; ');
   res.setHeader('Set-Cookie', cookie);
 }
 
 export function clearAuthCookie(res, cookieName = defaultCookieName) {
+  const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
   const cookie = [
     `${cookieName}=`,
     `Path=/`,
     `HttpOnly`,
     `SameSite=Lax`,
     `Max-Age=0`,
-    `Secure`,
+    ...(isProd ? [`Secure`] : []),
   ].join('; ');
   res.setHeader('Set-Cookie', cookie);
 }

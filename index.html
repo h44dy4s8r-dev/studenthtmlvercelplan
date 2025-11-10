@@ -14,27 +14,54 @@
       content="学生信息管理系统：登录/注册、管理员学生信息增删改查。"
     />
     <style>
+      :root {
+        --bg: #f7f8fb;
+        --card: #ffffff;
+        --text: #222;
+        --muted: #667085;
+        --primary: #4f46e5;
+        --primary-600: #4338ca;
+        --danger: #e11d48;
+        --border: #e6e8ef;
+        --shadow: 0 6px 24px rgba(15, 23, 42, .08);
+      }
+      body { background: linear-gradient(180deg, #eef2ff 0%, #ffffff 40%, #ffffff 100%); }
+      .container { max-width: 1080px; margin: 0 auto; padding: 1rem; }
+      header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+      header h1 { margin: 0; }
       .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-      .tabs button { cursor: pointer; }
+      .tabs button { cursor: pointer; border: 1px solid var(--border); background: var(--card); border-radius: 999px; padding: .4rem .9rem; }
+      .tabs button.active { background: var(--primary); color: white; border-color: var(--primary); }
       .hidden { display: none; }
       .row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
       @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { border-bottom: 1px solid #ddd; padding: .5rem; }
-      .muted { color: #666; font-size: .9em; }
-      .danger { color: #b00020; }
+      table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 10px; box-shadow: var(--shadow); }
+      thead { background: #f3f4f6; }
+      th, td { border-bottom: 1px solid #edf0f4; padding: .6rem; }
+      .muted { color: var(--muted); font-size: .92em; }
+      .danger { color: var(--danger); }
       .success { color: #0a7a18; }
       .toolbar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
       .right { margin-left: auto; }
-      .card { border: 1px solid #e5e5e5; padding: 1rem; border-radius: 8px; }
+      .card { background: var(--card); border: 1px solid var(--border); padding: 1rem; border-radius: 12px; box-shadow: var(--shadow); }
+      .btn-primary { background: var(--primary); border: 1px solid var(--primary); color: #fff; }
+      .btn-primary:hover { background: var(--primary-600); border-color: var(--primary-600); }
+      form label { display: grid; gap: .35rem; }
+      input, button { border-radius: 8px; }
+      input { border: 1px solid var(--border); padding: .55rem .7rem; }
+      button { padding: .5rem .9rem; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+      summary { cursor: pointer; }
     </style>
   </head>
   <body>
-    <h1>学生信息管理系统</h1>
-    <p class="muted">Neon 数据库 · Vercel Serverless Functions · UTF-8 中文支持</p>
+    <div class="container">
+      <header>
+        <h1>学生信息管理系统</h1>
+        <p class="muted">Neon 数据库 · Vercel Serverless Functions · UTF-8 中文支持</p>
+      </header>
 
     <div class="tabs">
-      <button id="tab-login">登录</button>
+      <button id="tab-login" class="active">登录</button>
       <button id="tab-register">注册（学生）</button>
       <button id="tab-admin" class="hidden">管理员面板</button>
       <button id="tab-student" class="hidden">我的信息</button>
@@ -67,7 +94,7 @@
             <input type="password" id="login-admin-pw" placeholder="admin" />
           </label>
         </div>
-        <button type="submit">登录</button>
+        <button type="submit" class="btn-primary">登录</button>
         <span id="login-msg" class="muted"></span>
       </form>
       <p class="muted">提示：默认管理员账号为 <code>admin / admin</code>，首次部署后需点击“初始化数据库”。</p>
@@ -107,7 +134,7 @@
             <input type="password" id="reg-pw" required />
           </label>
         </div>
-        <button type="submit">注册</button>
+        <button type="submit" class="btn-primary">注册</button>
         <span id="reg-msg" class="muted"></span>
       </form>
     </section>
@@ -132,7 +159,7 @@
             <label>邮箱<input type="email" id="c-email" /></label>
             <label>初始密码<input type="password" id="c-password" /></label>
           </div>
-          <button type="submit">添加</button>
+          <button type="submit" class="btn-primary">添加</button>
           <span id="create-msg" class="muted"></span>
         </form>
       </details>
@@ -163,6 +190,10 @@
       const $ = (s) => document.querySelector(s);
       const show = (el) => el.classList.remove('hidden');
       const hide = (el) => el.classList.add('hidden');
+      function activate(tabBtn) {
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        tabBtn.classList.add('active');
+      }
       const jsonFetch = async (url, opts={}) => {
         const res = await fetch(url, { 
           credentials: 'include',
@@ -188,10 +219,10 @@
         show(tabs[name]);
       }
 
-      $('#tab-login').onclick = () => switchTab('login');
-      $('#tab-register').onclick = () => switchTab('register');
-      $('#tab-admin').onclick = () => switchTab('admin');
-      $('#tab-student').onclick = () => switchTab('student');
+      $('#tab-login').onclick = (e) => { switchTab('login'); activate(e.target); };
+      $('#tab-register').onclick = (e) => { switchTab('register'); activate(e.target); };
+      $('#tab-admin').onclick = (e) => { switchTab('admin'); activate(e.target); };
+      $('#tab-student').onclick = (e) => { switchTab('student'); activate(e.target); };
 
       // role switch
       const roleRadios = Array.from(document.getElementsByName('role'));
@@ -231,6 +262,7 @@
             hide($('#tab-admin'));
             show($('#btn-logout'));
             switchTab('student');
+            activate($('#tab-student'));
             await loadMe();
           } else {
             const username = $('#login-admin-username').value.trim() || 'admin';
@@ -241,6 +273,7 @@
             hide($('#tab-student'));
             show($('#btn-logout'));
             switchTab('admin');
+            activate($('#tab-admin'));
             await refreshStudents();
           }
         } catch (err) {
@@ -250,12 +283,14 @@
 
       // logout (clear cookie by setting expired; simple client-side hint)
       $('#btn-logout').onclick = () => {
-        document.cookie = 'token=; Path=/; Max-Age=0; SameSite=Lax; Secure';
+        // 清除本地 Cookie（本地/生产均可）
+        document.cookie = 'token=; Path=/; Max-Age=0; SameSite=Lax';
         $('#whoami').textContent = '未登录';
         hide($('#tab-admin'));
         hide($('#tab-student'));
         hide($('#btn-logout'));
         switchTab('login');
+        activate($('#tab-login'));
       };
 
       // register
@@ -386,7 +421,7 @@
                   <label>邮箱<input id="m-email" value="${s.email || ''}" /></label>
                   <label>新密码<input id="m-password" type="password" placeholder="留空则不修改" /></label>
                 </div>
-                <button type="submit">保存修改</button>
+                <button type="submit" class="btn-primary">保存修改</button>
                 <span id="me-msg" class="muted"></span>
               </form>
             </details>
