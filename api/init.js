@@ -1,5 +1,6 @@
 import { query, ok, fail } from './_utils/db.js';
 import { hashPassword } from './_utils/auth.js';
+import { readJson } from './_utils/http.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

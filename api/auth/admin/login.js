@@ -1,10 +1,11 @@
 import { query, ok, fail } from '../../_utils/db.js';
 import { verifyPassword, signJwt, setAuthCookie } from '../../_utils/auth.js';
+import { readJson } from '../../_utils/http.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return fail(res, '仅支持 POST', 405);
   try {
-    const { username, password } = req.body || {};
+    const { username, password } = await readJson(req);
     if (!username || !password) return fail(res, '用户名与密码必填', 400);
     const rows = await query(`SELECT id, username, password_hash FROM admins WHERE username = $1`, [username]);
     if (rows.length === 0) return fail(res, '用户名或密码错误', 401);

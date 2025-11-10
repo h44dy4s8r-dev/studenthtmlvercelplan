@@ -10,8 +10,8 @@ export function getDb() {
 
 export async function query(sqlText, params = []) {
   const db = getDb();
-  // Use unsafe to support text + params style
-  return await db.unsafe(sqlText, params);
+  // neon client supports (text, params) call signature
+  return await db(sqlText, params);
 }
 
 export function ok(res, data = {}, status = 200, headers = {}) {

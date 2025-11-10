@@ -1,5 +1,6 @@
 import { query, ok, fail } from '../_utils/db.js';
 import { getTokenFromRequest, verifyJwt } from '../_utils/auth.js';
+import { readJson } from '../_utils/http.js';
 
 export default async function handler(req, res) {
   const method = req.method;
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
 
     if (method === 'POST') {
       if (auth.role !== 'admin') return fail(res, '仅管理员可新增', 403);
-      const { student_no, name, gender, age, class: cls, major, phone, email, password } = req.body || {};
+      const { student_no, name, gender, age, class: cls, major, phone, email, password } = await readJson(req);
       if (!student_no || !name) return fail(res, '学号与姓名必填', 400);
       let password_hash = null;
       if (password) {

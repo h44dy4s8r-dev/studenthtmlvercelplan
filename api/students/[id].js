@@ -1,5 +1,6 @@
 import { query, ok, fail } from '../_utils/db.js';
 import { getTokenFromRequest, verifyJwt } from '../_utils/auth.js';
+import { readJson } from '../_utils/http.js';
 
 export default async function handler(req, res) {
   const { id } = req.query || {};
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
       if (auth.role !== 'admin' && String(auth.sub) !== String(id)) {
         return fail(res, '权限不足', 403);
       }
-      const { name, gender, age, class: cls, major, phone, email, password } = req.body || {};
+      const { name, gender, age, class: cls, major, phone, email, password } = await readJson(req);
       let password_hash = undefined;
       if (password) {
         const { hashPassword } = await import('../_utils/auth.js');
