@@ -77,13 +77,13 @@
         <label><input type="radio" name="role" value="student" checked /> 学生</label>
         <label><input type="radio" name="role" value="admin" /> 管理员</label>
       </div>
-      <form id="form-login">
+      <form id="form-login" novalidate>
         <div id="login-student-fields">
           <label>学号
-            <input type="text" id="login-student-no" required placeholder="请输入学号" />
+            <input type="text" id="login-student-no" placeholder="请输入学号" />
           </label>
           <label>密码
-            <input type="password" id="login-student-pw" required placeholder="请输入密码" />
+            <input type="password" id="login-student-pw" placeholder="请输入密码" />
           </label>
         </div>
         <div id="login-admin-fields" class="hidden">
@@ -104,13 +104,13 @@
 
     <section id="panel-register" class="card hidden">
       <h2>学生注册</h2>
-      <form id="form-register">
+      <form id="form-register" novalidate>
         <div class="row">
           <label>学号
-            <input type="text" id="reg-student-no" required />
+            <input type="text" id="reg-student-no" />
           </label>
           <label>姓名
-            <input type="text" id="reg-name" required />
+            <input type="text" id="reg-name" />
           </label>
           <label>性别
             <input type="text" id="reg-gender" />
@@ -131,7 +131,7 @@
             <input type="email" id="reg-email" />
           </label>
           <label>密码
-            <input type="password" id="reg-pw" required />
+            <input type="password" id="reg-pw" />
           </label>
         </div>
         <button type="submit" class="btn-primary">注册</button>
@@ -147,10 +147,10 @@
       </div>
       <details open>
         <summary>新增学生</summary>
-        <form id="form-create">
+        <form id="form-create" novalidate>
           <div class="row">
-            <label>学号<input type="text" id="c-student-no" required /></label>
-            <label>姓名<input type="text" id="c-name" required /></label>
+            <label>学号<input type="text" id="c-student-no" /></label>
+            <label>姓名<input type="text" id="c-name" /></label>
             <label>性别<input type="text" id="c-gender" /></label>
             <label>年龄<input type="number" id="c-age" min="0" /></label>
             <label>班级<input type="text" id="c-class" /></label>
@@ -226,8 +226,25 @@
 
       // role switch
       const roleRadios = Array.from(document.getElementsByName('role'));
+      function setLoginRequiredFor(role) {
+        const sNo = $('#login-student-no');
+        const sPw = $('#login-student-pw');
+        const aUser = $('#login-admin-username');
+        const aPw = $('#login-admin-pw');
+        if (role === 'student') {
+          sNo.required = true; sPw.required = true;
+          aUser.required = false; aPw.required = false;
+        } else {
+          sNo.required = false; sPw.required = false;
+          aUser.required = true; aPw.required = true;
+        }
+      }
+      // 初始：学生登录模式
+      setLoginRequiredFor('student');
       roleRadios.forEach(r => r.addEventListener('change', () => {
-        if (roleRadios.find(x => x.checked).value === 'student') {
+        const role = roleRadios.find(x => x.checked).value;
+        setLoginRequiredFor(role);
+        if (role === 'student') {
           show($('#login-student-fields'));
           hide($('#login-admin-fields'));
         } else {
@@ -309,6 +326,9 @@
           password: $('#reg-pw').value
         };
         try {
+          if (!body.student_no || !body.name || !body.password) {
+            throw new Error('请填写学号、姓名与密码');
+          }
           await jsonFetch('/api/auth/student/register', { method: 'POST', body });
           $('#reg-msg').textContent = '注册成功，请到登录页登录';
         } catch (err) {
@@ -332,6 +352,9 @@
           password: $('#c-password').value
         };
         try {
+          if (!body.student_no || !body.name) {
+            throw new Error('请填写学号与姓名');
+          }
           await jsonFetch('/api/students', { method: 'POST', body });
           $('#create-msg').textContent = '添加成功';
           e.target.reset();

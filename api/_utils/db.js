@@ -10,7 +10,8 @@ export function getDb() {
 
 export async function query(sqlText, params = []) {
   const db = getDb();
-  return await db(sqlText, params);
+  // Use unsafe to support text + params style
+  return await db.unsafe(sqlText, params);
 }
 
 export function ok(res, data = {}, status = 200, headers = {}) {
